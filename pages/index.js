@@ -5,9 +5,10 @@ import AssessmentABI from "../artifacts/contracts/Assessment.sol/Assessment.json
 const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const App = () => {
+  const [message, setMessage] = useState("");
+  const [newMessage, setNewMessage] = useState("");
   const [value, setValue] = useState(0);
   const [newValue, setNewValue] = useState("");
-  const [changeValue, setChangeValue] = useState("");
   const [provider, setProvider] = useState(null);
   const [contract, setContract] = useState(null);
 
@@ -22,8 +23,10 @@ const App = () => {
         setProvider(web3Provider);
         setContract(assessmentContract);
 
-
-        const initialValue = await assessmentContract.value();
+        // Fetch initial values
+        const initialMessage = await assessmentContract.retrieveMessage();
+        const initialValue = await assessmentContract.retrieveValue();
+        setMessage(initialMessage);
         setValue(initialValue.toString());
       } catch (error) {
         console.error("Initialization error:", error);
@@ -33,11 +36,23 @@ const App = () => {
     init();
   }, []);
 
+  const handleSetMessage = async () => {
+    try {
+      const tx = await contract.updateMessage(newMessage);
+      await tx.wait();
+      const updatedMessage = await contract.retrieveMessage();
+      setMessage(updatedMessage);
+      setNewMessage("");
+    } catch (error) {
+      console.error("Set Message error:", error);
+    }
+  };
+
   const handleSetValue = async () => {
     try {
-      const tx = await contract.setValue(parseInt(newValue));
+      const tx = await contract.updateValue(parseInt(newValue));
       await tx.wait();
-      const updatedValue = await contract.value();
+      const updatedValue = await contract.retrieveValue();
       setValue(updatedValue.toString());
       setNewValue("");
     } catch (error) {
@@ -45,74 +60,76 @@ const App = () => {
     }
   };
 
-  const handleIncrement = async () => {
+  const handleResetMessage = async () => {
     try {
-      const incrementAmount = parseInt(changeValue);
-      const tx = await contract.increment(incrementAmount);
+      const tx = await contract.clearMessage();
       await tx.wait();
-      const updatedValue = await contract.value();
-      setValue(updatedValue.toString());
-      setChangeValue("");
+      const updatedMessage = await contract.retrieveMessage();
+      setMessage(updatedMessage);
     } catch (error) {
-      console.error("Increment error:", error);
+      console.error("Reset Message error:", error);
     }
   };
 
-  const handleDecrement = async () => {
+  const handleResetValue = async () => {
     try {
-      const decrementAmount = parseInt(changeValue);
-      const tx = await contract.decrement(decrementAmount);
+      const tx = await contract.resetValue();
       await tx.wait();
-      const updatedValue = await contract.value();
-      setValue(updatedValue.toString());
-      setChangeValue("");
-    } catch (error) {
-      console.error("Decrement error:", error);
-    }
-  };
-
-  const handleReset = async () => {
-    try {
-      const tx = await contract.reset();
-      await tx.wait();
-      const updatedValue = await contract.value();
+      const updatedValue = await contract.retrieveValue();
       setValue(updatedValue.toString());
     } catch (error) {
-      console.error("Reset error:", error);
+      console.error("Reset Value error:", error);
     }
   };
 
   return (
-    <div>
-      <h1>Value Manager Dapp!</h1>
-      <p>Current Value: {value}</p>
+    <div style={containerStyle}>
+      <div style={boxStyle}>
+        <h1>Assessment Dapp</h1>
 
-      <div>
-        <input
-          type="number"
-          value={newValue}
-          onChange={(e) => setNewValue(e.target.value)}
-          placeholder="Enter value to set"
-        />
-        <button onClick={handleSetValue}>Set Value</button>
-      </div>
+        <div>
+          <h2>Current Message: {message}</h2>
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Enter new message"
+          />
+          <button onClick={handleSetMessage}>Set Message</button>
+          <button onClick={handleResetMessage}>Reset Message</button>
+        </div>
 
-      <div>
-        <input
-          type="number"
-          value={changeValue}
-          onChange={(e) => setChangeValue(e.target.value)}
-          placeholder="Enter amount to increment/decrement"
-        />
-        <button onClick={handleIncrement}>Increment</button>
-        <button onClick={handleDecrement}>Decrement</button>
-      </div>
-
-      <div>
-        <button onClick={handleReset}>Reset</button>
+        <div>
+          <h2>Current Value: {value}</h2>
+          <input
+            type="number"
+            value={newValue}
+            onChange={(e) => setNewValue(e.target.value)}
+            placeholder="Enter new value"
+          />
+          <button onClick={handleSetValue}>Set Value</button>
+          <button onClick={handleResetValue}>Reset Value</button>
+        </div>
       </div>
     </div>
   );
+};
+
+const containerStyle = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "100vh",
+  backgroundColor: "#f4f4f4",
+};
+
+const boxStyle = {
+  padding: "20px",
+  backgroundColor: "#fff",
+  borderRadius: "10px",
+  boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
+  width: "400px",
+  textAlign: "center",
 };
 
 export default App;

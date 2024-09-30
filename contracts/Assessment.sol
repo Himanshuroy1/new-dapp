@@ -2,23 +2,43 @@
 pragma solidity ^0.8.0;
 
 contract Assessment {
-    uint public value;
+    string public message;
+    uint256 public value;
 
-    function setValue(uint _value) public {
+    // Constructor to set initial values
+    constructor(string memory _message, uint256 _value) {
+        message = _message;
         value = _value;
     }
 
-    function increment(uint amount) public {
-        value += amount;
+    // Function to update the message
+    function updateMessage(string memory _newMessage) public {
+        message = _newMessage;
     }
 
-    function decrement(uint amount) public {
-        require(value >= amount, "Value must be greater than or equal to amount");
-        value -= amount;
+    // Function to update the value
+    function updateValue(uint256 _newValue) public {
+        value = _newValue;
     }
 
-    function reset() public {
-        value = 0;
+    // Function to retrieve the value
+    function retrieveValue() public view returns (uint256) {
+        return value;
+    }
+
+    // Function to retrieve the message
+    function retrieveMessage() public view returns (string memory) {
+        return message;
+    }
+
+    // Function to reset the message to a default value
+    function clearMessage() public {
+        message = "";  // Default message
+    }
+
+    // Function to reset the value to 0
+    function resetValue() public {
+        value = 0;  // Reset value to 0
     }
 
     // Optional fallback function

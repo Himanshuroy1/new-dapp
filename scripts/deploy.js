@@ -1,23 +1,24 @@
-// scripts/deploy.js
 async function main() {
-    const [deployer] = await ethers.getSigners();
-  
-    console.log("Deploying contracts with the account:", deployer.address);
-  
-    const balance = await deployer.getBalance();
-    console.log("Account balance:", balance.toString());
-  
-    const Assessment = await ethers.getContractFactory("Assessment");
-    const assessment = await Assessment.deploy();
-    await assessment.deployed();
-  
-    console.log("Assessment contract deployed to:", assessment.address);
-  }
-  
-  main()
-    .then(() => process.exit(0))
-    .catch((error) => {
-      console.error(error);
-      process.exit(1);
-    });
-  
+  // Get the contract to deploy
+  const Assessment = await ethers.getContractFactory("Assessment");
+
+  // Deploy the contract with the required constructor arguments
+  const message = "Hello, World!";  // You can change this
+  const value = 100;  // You can change this
+
+  const assessment = await Assessment.deploy(message, value);
+
+  console.log("Deploying contracts with the account:", await assessment.signer.getAddress());
+  console.log("Account balance:", (await assessment.signer.getBalance()).toString());
+
+  await assessment.deployed();
+
+  console.log("Contract deployed to:", assessment.address);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
